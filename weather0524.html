@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<head>
+<link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Cabin:300,400' rel='stylesheet' type='text/css'>
+<title>Current Conditions</title>
+<body>
+<style>
+h1 {
+font-family: Ubuntu;
+font-variant: small-caps;
+text-align: center;
+font-size: 0.74em
+text-shadow:
+    -1px -1px 0 white,
+    1px -1px 0 white,
+    -1px 1px 0 white,
+    1px 1px 0 white; 
+}
+img {
+display:block;
+margin: auto;
+margin-top: 10px;
+}
+p {
+font-family: Cabin;
+line-height: 2em;
+font-size: 0.85em;
+font-style: italic;
+text-align: center;
+}
+body {
+margin-left: 15px;
+background: Azure;
+}
+</style>
+<img width=100 id="image">
+<h1 id="weather"> </h1>
+<h1 id="temp"> </h1>
+<h1 id="wind"> </h1>
+<h1 id="humidity"> </h1>
+<h1 id="rain"> </h1>
+<p>This page refreshes every 10 minutes.</p>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script>
+var timeout = setTimeout("location.reload(true);",600000);
+  function resetTimeout() {
+    clearTimeout(timeout);
+    timeout = setTimeout("location.reload(true);",600000);
+  }
+jQuery(document).ready(function($) {
+  $.ajax({
+  url : "http://api.wunderground.com/api/5a97a76eaf3e51cb/geolookup/conditions/q/pws:KNVRENO216.json",
+  dataType : "jsonp",
+  success : function(parsed_json) {
+  var linebreak = document.createElement("br");
+  var location = parsed_json['location']['city'];
+  var Overall = parsed_json['current_observation']['weather'];
+  if ((Overall === 'Sunny') || (Overall === 'Hot')) document.getElementById("image").src = "https://cdn1.iconfinder.com/data/icons/weather-glyphs-black/512/Weather_Glyphs_SunBlack.png";
+  if (Overall === 'Clear') document.getElementById("image").src = "https://cdn2.iconfinder.com/data/icons/wthr/32/sunny-512.png";
+  if (Overall === 'Partly Cloudy') document.getElementById("image").src = "http://icon-park.com/imagefiles/simple_weather_icons2_partly_cloudy.png";
+  if (Overall === 'Mostly Cloudy') document.getElementById("image").src = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Weather-more-clouds.svg/1000px-Weather-more-clouds.svg.png";
+  if (Overall === 'Breezy') document.getElementById("image").src = "https://cdn3.iconfinder.com/data/icons/weather-112/1024/breezy-256.png";
+  if (Overall === 'Rainy') document.getElementById("image").src = "https://cdn3.iconfinder.com/data/icons/chubby-weather/403/rain_less-512.png";
+  if (Overall === 'Snowy') document.getElementById("image").src = "https://d30y9cdsu7xlg0.cloudfront.net/png/64-200.png";
+  document.getElementById("weather").textContent = 'It\'s currently ' + Overall + ' where I live.';
+  var feelsLike = parsed_json['current_observation']['feelslike_f'];
+  var temp_f = parsed_json['current_observation']['temp_f'];
+  if (temp_f > 20) var status = ' chilly ';
+  if (temp_f > 35) var status = ' cold ';
+  if (temp_f > 50) var status = ' mild ';
+  if (temp_f > 65) var status = ' warm ';
+  if (temp_f > 80) var status = ' hot ';
+  if (temp_f > 95) var status = ' broiling ';
+  if (temp_f <= 20) var status = ' freezing ';
+  document.getElementById("temp").textContent = 'The temperature is a' + status + temp_f + ' degrees, and it feels like ' + feelsLike + ' degrees.';
+  var windSpeed = parsed_json['current_observation']['wind_mph'];
+  var windDegrees = parsed_json['current_observation']['wind_degrees'];
+  var windGust = parsed_json['current_observation']['wind_gust_mph'];
+  var windDirection = parsed_json['current_observation']['wind_dir'];
+  document.getElementById("wind").textContent = 'The wind is blowing in from the ' + windDirection + ' at ' + windSpeed + 'mph, with gusts up to ' + windGust + 'mph.';
+  var relHumidity = parsed_json['current_observation']['relative_humidity'];
+  var pressure = parsed_json['current_observation']['pressure_in'];
+  document.getElementById("humidity").textContent = 'The relative humidity is at ' + relHumidity + ' and the barometric pressure is at ' + pressure + ' inches.';
+  var inchesPerHour = parsed_json['current_observation']['precip_1hr_in'];
+  var inchesToday = parsed_json['current_observation']['precip_today_in'];
+  if (inchesToday > 0.2) document.getElementById("rain").textContent = 'It is raining ' + inchesPerHour + 'inches per hour, and has already dropped ' + inchesToday + ' inches today.';
+  }
+  }); 
+});
+</script>
